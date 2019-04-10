@@ -1,4 +1,6 @@
 #include "Windows.h"
+#include <sstream>
+
 
 Window::WindowClass Window::WindowClass::wndClass;
 
@@ -38,7 +40,7 @@ HINSTANCE Window::WindowClass::GetInstance() noexcept
 }
 
 // Window Stuff
-Window::Window(int width, int height, const char* name) noexcept
+Window::Window(int width, int height, const char* name)
 {
 	// calculate windows size based on desired client region size
 	RECT wr;
@@ -46,7 +48,15 @@ Window::Window(int width, int height, const char* name) noexcept
 	wr.right = width + wr.left;
 	wr.top = 100;
 	wr.bottom = height + wr.top;
-	AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
+	if (FAILED(AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE)))
+	{
+		throw CHWND_LAST_EXCEPT();
+	};
+
+	// throw CHWND_EXCEPT(ERROR_ARENA_TRASHED);
+	// throw std::runtime_error("Something happaned");
+	// throw 45626;
+
 	// create window & get hWnd
 	hWnd = CreateWindow(
 		WindowClass::GetName(), name,
@@ -54,6 +64,11 @@ Window::Window(int width, int height, const char* name) noexcept
 		CW_USEDEFAULT , CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top,
 		nullptr, nullptr, WindowClass::GetInstance(), this
 	);
+	// check for error
+	if (hWnd == nullptr)
+	{
+		throw CHWND_LAST_EXCEPT();
+	}
 	// show window
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
 }
@@ -100,4 +115,56 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	}
 
 	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+// Window exception stuff
+Window::Exception::Exception(int line, const char* file, HRESULT hr) noexcept
+	:
+	ChiliException(line, file),
+	hr(hr)
+{}
+
+
+const char* Window::Exception::what() const noexcept
+{
+	std::ostringstream oss;
+	oss << GetType() << std::endl
+		<< "[Error Code] " << GetErrorCode() << std::endl
+		<< "[Descroption] " << GetErrorString() << std::endl
+		<< GetOriginString();
+	whatBuffer = oss.str();
+	return whatBuffer.c_str();
+}
+
+const char* Window::Exception::GetType() const noexcept
+{
+	return "Chili Window Exception";
+}
+
+std::string Window::Exception::TranslateErrorCode(HRESULT hr) noexcept
+{
+	char* pMsgBuf = nullptr;
+	DWORD nMsgLen = FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER |
+		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		nullptr, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		reinterpret_cast<LPSTR>(&pMsgBuf), 0, nullptr);
+
+	if (nMsgLen == 0)
+	{
+		return "Unindentified error code";
+	}
+	std::string errorString = pMsgBuf;
+	LocalFree(pMsgBuf);
+	return errorString;
+}
+
+HRESULT Window::Exception::GetErrorCode() const noexcept
+{
+	return hr;
+}
+
+std::string Window::Exception::GetErrorString() const noexcept
+{
+	return TranslateErrorCode(hr);
 }

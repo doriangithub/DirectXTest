@@ -1,6 +1,3 @@
-//#include <Windows.h>
-//#include "WindowsMessageMap.h"
-//#include <sstream>
 #include "Windows.h"
 
 int CALLBACK WinMain(
@@ -9,24 +6,40 @@ int CALLBACK WinMain(
 	LPSTR	  lpCmdLine,
 	int       nCmdShow)
 {
-	Window wnd(800, 300, "Window - 1 ");
-	Window wnd2(600, 400, "Window - 2 ");
+	try
+	{
+		Window wnd(800, 300, "Window - 1 ");
+		Window wnd2(600, 400, "Window - 2 ");
 
-	// message pump
-	MSG msg;
-	BOOL gResult;
-	while ( (gResult = GetMessage(&msg, nullptr, 0, 0)) > 0)
-	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
+		// message pump
+		MSG msg;
+		BOOL gResult;
+		while ((gResult = GetMessage(&msg, nullptr, 0, 0)) > 0)
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
 
-	if (gResult == -1)
-	{
-		return -1;
+		if (gResult == -1)
+		{
+			return -1;
+		}
+		else
+		{
+			return msg.wParam;
+		}
 	}
-	else
+	catch(const ChiliException& e)
 	{
-		return msg.wParam;
+		MessageBox(nullptr, e.what(), e.GetType(), MB_OK | MB_ICONEXCLAMATION);
 	}
+	catch(const std::exception& e)
+	{
+		MessageBox(nullptr, e.what(), "Standard Exception", MB_OK | MB_ICONEXCLAMATION);
+	}
+	catch (...)
+	{
+		MessageBox(nullptr, "No details available", "Unknown Exception" , MB_OK | MB_ICONEXCLAMATION);
+	}
+	return -1;
 }
