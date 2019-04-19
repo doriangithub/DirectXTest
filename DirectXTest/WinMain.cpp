@@ -1,3 +1,4 @@
+#include <sstream>
 #include "Windows.h"
 
 
@@ -19,6 +20,27 @@ int CALLBACK WinMain(
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
+
+			// test code
+			while (!wnd.mouse.IsEmpty())
+			{
+				const auto e = wnd.mouse.Read();
+				switch (e.GetType())
+				{
+				case Mouse::Event::Type::Leave:
+					wnd.SetTitle("Gone");
+					break;
+				case Mouse::Event::Type::Move:
+				{
+					std::ostringstream oss;
+					oss << "Mouse move to (" << std::to_string(wnd.mouse.GetPosX()) << ":"
+						<< std::to_string(wnd.mouse.GetPosY()) << ")";
+					wnd.SetTitle(oss.str());
+				}
+				break;
+				}
+			}
+
 			if (wnd.kbd.KeyIsPressed(VK_MENU))
 			{
 				MessageBox(nullptr, "Samethng happaned!", "Space key was pressed!", 0);
