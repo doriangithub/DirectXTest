@@ -36,6 +36,23 @@ int CALLBACK WinMain(
 					oss << "Mouse move to (" << std::to_string(wnd.mouse.GetPosX()) << ":"
 						<< std::to_string(wnd.mouse.GetPosY()) << ")";
 					wnd.SetTitle(oss.str());
+					break;
+				}
+				case Mouse::Event::Type::WheelDown:
+				{
+					std::ostringstream oss;
+					oss << "Down (" << std::to_string(wnd.mouse.GetPosX()) << ":"
+						<< std::to_string(wnd.mouse.GetPosY()) << ")";
+					wnd.SetTitle(oss.str());
+					break;
+				}
+				case Mouse::Event::Type::WheelUp:
+				{
+					std::ostringstream oss;
+					oss << "Up (" << std::to_string(wnd.mouse.GetPosX()) << ":"
+						<< std::to_string(wnd.mouse.GetPosY()) << ")";
+					wnd.SetTitle(oss.str());
+					break;
 				}
 				break;
 				}
