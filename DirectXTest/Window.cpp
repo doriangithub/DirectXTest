@@ -263,3 +263,26 @@ std::string Window::Exception::GetErrorString() const noexcept
 {
 	return TranslateErrorCode(hr);
 }
+
+int Window::ProcessMessage()
+{
+	MSG msg;
+	// while queue has message, remove and dispatch them (but do not block on...
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+	{
+		// check for quit because peekmessage does not signal this via return
+		if (msg.message = WM_QUIT)
+		{
+			// return original wrapping int ( arg to PostQuitMessage is in wpar...
+			return msg.wParam;
+		}
+
+		// TranslateMessage will post auxilliary WM_CHAR message from key msg
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	// return empty optional when not quiting app
+	return{};
+
+}
