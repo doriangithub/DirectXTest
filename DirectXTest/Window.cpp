@@ -74,6 +74,8 @@ Window::Window(int width, int height, const char* name)
 	}
 	// show window
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
+	// vraete graphics object
+	pGfx = std::make_unique<Graphics>(hWnd);
 }
 
 Window::~Window()
@@ -285,4 +287,9 @@ std::optional<int> Window::ProcessMessages()
 	// return empty optional when not quiting app
 	return{};
 
+}
+
+Graphics& Window::Gfx()
+{
+	return *pGfx;
 }
